@@ -10,10 +10,18 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.List;
+
 import br.com.dipaulamobilesolutions.agenda.R;
 import br.com.dipaulamobilesolutions.agenda.database.AgendaDatabase;
 import br.com.dipaulamobilesolutions.agenda.database.dao.AlunoDAO;
+import br.com.dipaulamobilesolutions.agenda.database.dao.TelefoneDAO;
 import br.com.dipaulamobilesolutions.agenda.model.activity.Aluno;
+import br.com.dipaulamobilesolutions.agenda.model.activity.Telefone;
+import br.com.dipaulamobilesolutions.agenda.model.activity.TipoTelefone;
+import br.com.dipaulamobilesolutions.agenda.ui.asynctask.BuscaTodosTelefonesDoAlunoTask;
+import br.com.dipaulamobilesolutions.agenda.ui.asynctask.EditaAlunoTask;
+import br.com.dipaulamobilesolutions.agenda.ui.asynctask.SalvaAlunoTask;
 
 import static br.com.dipaulamobilesolutions.agenda.ui.activity.ConstantesActivities.CHAVE_ALUNO;
 
@@ -24,21 +32,24 @@ public class FormularioAlunoActivity extends AppCompatActivity {
     public static final String TITULO_APPBAR_NOVO_ALUNO = "Novo aluno";
     private static final String TITULO_APPBAR_EDITA_ALUNO = "Edita aluno";
     private EditText etNome;
-    private EditText etSobrenome;
-    private EditText etTelefone;
+    private EditText etTelefoneFixo;
+    private EditText etTelefoneCelular;
     private EditText etEmail;
     private Aluno aluno;
-    private AlunoDAO dao;
+    private AlunoDAO alunoDAO;
+    private TelefoneDAO telefoneDAO;
+    private List<Telefone> telefonesDoAluno;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_formulario_aluno);
+        AgendaDatabase database = AgendaDatabase.getInstance(this);
+        telefoneDAO = database.getTelefoneDAO();
+        alunoDAO = database.getRoomAlunoDAO();
+
         inicializarCampos();
         carregaAluno();
-
-        AgendaDatabase database = AgendaDatabase.getInstance(this);
-        this.dao = database.getRoomAlunoDAO();
     }
 
     @Override
@@ -61,6 +72,14 @@ public class FormularioAlunoActivity extends AppCompatActivity {
         return super.onContextItemSelected(item);
     }
 
+    private void inicializarCampos() {
+        etNome = findViewById(R.id.etNome);
+        etTelefoneFixo = findViewById(R.id.etTelefone_fixo);
+        etTelefoneCelular = findViewById(R.id.etTelefone_celular);
+        etEmail = findViewById(R.id.etEmail);
+    }
+
+
     private void carregaAluno() {
         Intent dados = getIntent();
         if (dados.hasExtra(CHAVE_ALUNO)) {  //se estiver editando, então chegaram novas referencias!
@@ -73,41 +92,57 @@ public class FormularioAlunoActivity extends AppCompatActivity {
         }
     }
 
+    private void preencheAluno() {
+        String nome = etNome.getText().toString();
+        String email = etEmail.getText().toString();
+        aluno.setNome(nome);
+        aluno.setEmail(email);
+    }
+
     private void preencheCampos() {
         etNome.setText(aluno.getNome());
-        etSobrenome.setText(aluno.getSobrenome());
-        etTelefone.setText(aluno.getTelefone());
         etEmail.setText(aluno.getEmail());
+        preencheCamposDeTelefone();
+    }
+
+    private void preencheCamposDeTelefone() {
+        new BuscaTodosTelefonesDoAlunoTask(telefoneDAO, aluno, telefones -> {
+            this.telefonesDoAluno = telefones;
+            for (Telefone telefone : telefonesDoAluno) {
+                if (telefone.getTipo() == TipoTelefone.FIXO) {
+                    etTelefoneFixo.setText(telefone.getNumero());
+                } else {
+                    etTelefoneCelular.setText(telefone.getNumero());
+                }
+            }
+        }).execute();
     }
 
 
     private void finalizaFormulario() {
         preencheAluno();
+        Telefone telefoneFixo = criaTelefone(etTelefoneFixo, TipoTelefone.FIXO);
+        Telefone telefoneCelular = criaTelefone(etTelefoneCelular, TipoTelefone.CELULAR);
         if (aluno.temIdValido()) {
-            dao.edita(aluno);
+            editaAluno(telefoneFixo, telefoneCelular);
         } else {
-            dao.salva(aluno);
+            salvaAluno(telefoneFixo, telefoneCelular);
         }
-        finish();
     }
 
-    private void inicializarCampos() {
-        etNome = findViewById(R.id.etnome);
-        etSobrenome = findViewById(R.id.etSobrenome);
-        etTelefone = findViewById(R.id.etTelefone);
-        etEmail = findViewById(R.id.etEmail);
+    private Telefone criaTelefone(EditText etTelefoneFixo, TipoTelefone fixo) {
+        String numeroFixo = etTelefoneFixo.getText().toString();
+        return new Telefone(numeroFixo, fixo);
     }
 
-    private void preencheAluno() {
-        String nome = etNome.getText().toString();
-        String sobrenome = etSobrenome.getText().toString();
-        String telefone = etTelefone.getText().toString();
-        String email = etEmail.getText().toString();
-
-
-        aluno.setNome(nome);
-        aluno.setSobrenome(sobrenome);
-        aluno.setTelefone(telefone);
-        aluno.setEmail(email);
+    private void salvaAluno(Telefone telefoneFixo, Telefone telefoneCelular) {
+        new SalvaAlunoTask(alunoDAO, aluno, telefoneFixo, telefoneCelular, telefoneDAO, this::finish).execute();
     }
+
+    private void editaAluno(Telefone telefoneFixo, Telefone telefoneCelular) {
+        new EditaAlunoTask(alunoDAO, aluno, telefoneFixo, telefoneCelular, telefoneDAO, telefonesDoAluno, this::finish).execute();
+
+    }
+
+
 }

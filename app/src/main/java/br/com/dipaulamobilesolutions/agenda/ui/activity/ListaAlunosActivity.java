@@ -63,7 +63,7 @@ public class ListaAlunosActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        listaAlunosView.atualizaLista();
+        listaAlunosView.atualizaAlunos();
     }
 
     private void configuraFabNovoAluno() {

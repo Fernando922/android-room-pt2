@@ -13,6 +13,8 @@ import br.com.dipaulamobilesolutions.agenda.database.AgendaDatabase;
 import br.com.dipaulamobilesolutions.agenda.database.dao.AlunoDAO;
 import br.com.dipaulamobilesolutions.agenda.model.activity.Aluno;
 import br.com.dipaulamobilesolutions.agenda.ui.adapter.ListaAlunosAdapter;
+import br.com.dipaulamobilesolutions.agenda.ui.asynctask.BuscaAlunosTask;
+import br.com.dipaulamobilesolutions.agenda.ui.asynctask.RemoveAlunoTask;
 
 public class ListaAlunosView {
 
@@ -57,12 +59,12 @@ public class ListaAlunosView {
     }
 
     private void remove(Aluno aluno) {
-        dao.remove(aluno);
-        adapter.remove(aluno);
+        new RemoveAlunoTask(dao, adapter, aluno).execute();
+
     }
 
-    public void atualizaLista() {
-        adapter.atualiza(dao.todos());
+    public void atualizaAlunos() {
+        new BuscaAlunosTask(dao, adapter).execute();
     }
 
 }

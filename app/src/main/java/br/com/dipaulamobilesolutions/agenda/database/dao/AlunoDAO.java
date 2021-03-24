@@ -14,7 +14,7 @@ import br.com.dipaulamobilesolutions.agenda.model.activity.Aluno;
 public interface AlunoDAO {
 
     @Insert  //ja implementa o metodo de salvar no banco, desde que o model passado seja uma entidade
-    void salva(Aluno aluno);
+    Long salva(Aluno aluno);
 
     @Query("SELECT * FROM Aluno")  //neste caso a query deve ser manual
     List<Aluno> todos();

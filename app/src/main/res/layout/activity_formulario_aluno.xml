@@ -11,7 +11,7 @@
         tools:context=".ui.activity.FormularioAlunoActivity">
 
         <EditText
-            android:id="@+id/etnome"
+            android:id="@+id/etNome"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
@@ -20,21 +20,21 @@
             android:importantForAutofill="no" />
 
         <EditText
-            android:id="@+id/etSobrenome"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:hint="@string/sobrenome"
-            android:inputType="text"
-            android:importantForAutofill="no" />
-
-        <EditText
-            android:id="@+id/etTelefone"
+            android:id="@+id/etTelefone_fixo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
             android:inputType="phone"
-            android:hint="@string/telefone"
+            android:hint="@string/telefone_fixo"
+            android:importantForAutofill="no" />
+
+        <EditText
+            android:id="@+id/etTelefone_celular"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:inputType="phone"
+            android:hint="@string/telefone_celular"
             android:importantForAutofill="no" />
 
         <EditText

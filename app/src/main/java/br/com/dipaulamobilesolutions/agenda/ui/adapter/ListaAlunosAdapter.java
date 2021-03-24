@@ -11,14 +11,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.com.dipaulamobilesolutions.agenda.R;
+import br.com.dipaulamobilesolutions.agenda.database.AgendaDatabase;
+import br.com.dipaulamobilesolutions.agenda.database.dao.TelefoneDAO;
 import br.com.dipaulamobilesolutions.agenda.model.activity.Aluno;
+import br.com.dipaulamobilesolutions.agenda.ui.asynctask.BuscaPrimeiroTelefoneDoAlunoTask;
 
 public class ListaAlunosAdapter extends BaseAdapter {
+
     private final List<Aluno> alunos = new ArrayList<>();
     private final Context context;
+    private final TelefoneDAO dao;
 
     public ListaAlunosAdapter(Context context) {
         this.context = context;
+        dao = AgendaDatabase.getInstance(context).getTelefoneDAO();
     }
 
     @Override
@@ -27,31 +33,29 @@ public class ListaAlunosAdapter extends BaseAdapter {
     }
 
     @Override
-    public Aluno getItem(int position) {
-        return alunos.get(position);
+    public Aluno getItem(int posicao) {
+        return alunos.get(posicao);
     }
 
     @Override
-    public long getItemId(int position) {
-        return alunos.get(position).getId();
+    public long getItemId(int posicao) {
+        return alunos.get(posicao).getId();
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup viewGroup) {
+    public View getView(int posicao, View view, ViewGroup viewGroup) {
         View viewCriada = criaView(viewGroup);
-
-        Aluno alunoRetornado = alunos.get(position);
-
-        vincula(viewCriada, alunoRetornado);
-
+        Aluno alunoDevolvido = alunos.get(posicao);
+        vincula(viewCriada, alunoDevolvido);
         return viewCriada;
     }
 
     private void vincula(View view, Aluno aluno) {
-        TextView name = view.findViewById(R.id.tvName);
-        TextView phone = view.findViewById(R.id.tvPhone);
-        name.setText(aluno.getNomeCompleto() + " " + aluno.dataFormatada());
-        phone.setText(aluno.getTelefone());
+        TextView nome = view.findViewById(R.id.item_aluno_nome);
+        nome.setText(aluno.getNome());
+        TextView telefone = view.findViewById(R.id.item_aluno_telefone);
+        new BuscaPrimeiroTelefoneDoAlunoTask(dao, aluno.getId(), (telefoneEncontrado) ->
+                telefone.setText(telefoneEncontrado.getNumero())).execute();
     }
 
     private View criaView(ViewGroup viewGroup) {
@@ -60,9 +64,7 @@ public class ListaAlunosAdapter extends BaseAdapter {
                 .inflate(R.layout.item_aluno, viewGroup, false);
     }
 
-
-
-    public void atualiza(List<Aluno> alunos){
+    public void atualiza(List<Aluno> alunos) {
         this.alunos.clear();
         this.alunos.addAll(alunos);
         notifyDataSetChanged();
@@ -70,6 +72,6 @@ public class ListaAlunosAdapter extends BaseAdapter {
 
     public void remove(Aluno aluno) {
         alunos.remove(aluno);
-        notifyDataSetChanged();  //notifica que o dataset foi modificado!
+        notifyDataSetChanged();
     }
 }
