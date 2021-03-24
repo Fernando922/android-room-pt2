@@ -1,5 +1,5 @@
 <h1 align="center">
-  Android Room pt 1
+  Android Room pt 2
 </h1>
 
 <p align="center">
@@ -11,7 +11,7 @@
 
 ## :rocket: Project
 
-:globe_with_meridians:  https://cursos.alura.com.br/course/android-room
+:globe_with_meridians:  https://cursos.alura.com.br/course/android-room-operacoes-assincronas
 
 
 ## Preview
